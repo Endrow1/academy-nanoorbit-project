@@ -143,20 +143,3 @@ GROUPE_NomA_NomB_NanoOrbit_Phase4.sql
 # ALTN82
 GROUPE_NomA_NomB_NanoOrbit_Android.zip
 ```
-
----
-
-## ⚠️ Plagiat
-
-> Tout partage de code ou de modèle entre groupes est sanctionné par la note **0/20** et une convocation en conseil de discipline.  
-> Les différences de choix de modélisation entre groupes sont **attendues et valorisées**.
-
----
-
-## 📬 Contact
-
-**Module ALTN83** — Khadija SLIMANI · Marwa HARZI  
-**Module ALTN82** — Christian KHOURY  
-**Responsables** — Youssef AIT EL MAHJOUB · Marwa HARZI  
-
-*EFREI Paris Panthéon-Assas Université — Département Logiciel et systèmes d'information*
