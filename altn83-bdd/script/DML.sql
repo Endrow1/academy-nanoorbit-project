@@ -95,12 +95,11 @@ INSERT INTO MISSION VALUES (
 --------------------------------------------------
 -- 9. FENETRE_COM
 --------------------------------------------------
-INSERT INTO FENETRE_COM VALUES (1,TIMESTAMP '2024-01-15 09:14:00',420,82.3,1250,'Réalisée','SAT-001','GS-KIR-01');
-INSERT INTO FENETRE_COM VALUES (2,TIMESTAMP '2024-01-15 11:52:00',310,67.1,890,'Réalisée','SAT-002','GS-TLS-01');
-INSERT INTO FENETRE_COM VALUES (3,TIMESTAMP '2024-01-16 08:30:00',540,88.9,1680,'Réalisée','SAT-003','GS-KIR-01');
-INSERT INTO FENETRE_COM VALUES (4,TIMESTAMP '2024-01-20 14:22:00',380,71.4,NULL,'Planifiée','SAT-001','GS-TLS-01');
-INSERT INTO FENETRE_COM VALUES (5,TIMESTAMP '2024-01-21 07:45:00',290,59.8,NULL,'Planifiée','SAT-003','GS-TLS-01');
-
+INSERT INTO FENETRE_COM (datetime_debut,duree,elevation_max,volume_donnees,statut,id_satellite,code_station) VALUES (TIMESTAMP '2024-01-15 09:14:00',420,82.3,1250,'Réalisée','SAT-001','GS-KIR-01');
+INSERT INTO FENETRE_COM (datetime_debut,duree,elevation_max,volume_donnees,statut,id_satellite,code_station) VALUES (TIMESTAMP '2024-01-15 11:52:00',310,67.1,890,'Réalisée','SAT-002','GS-TLS-01');
+INSERT INTO FENETRE_COM (datetime_debut,duree,elevation_max,volume_donnees,statut,id_satellite,code_station) VALUES (TIMESTAMP '2024-01-16 08:30:00',540,88.9,1680,'Réalisée','SAT-003','GS-KIR-01');
+INSERT INTO FENETRE_COM (datetime_debut,duree,elevation_max,volume_donnees,statut,id_satellite,code_station) VALUES (TIMESTAMP '2024-01-20 14:22:00',380,71.4,NULL,'Planifiée','SAT-001','GS-TLS-01');
+INSERT INTO FENETRE_COM (datetime_debut,duree,elevation_max,volume_donnees,statut,id_satellite,code_station) VALUES (TIMESTAMP '2024-01-21 07:45:00',290,59.8,NULL,'Planifiée','SAT-003','GS-TLS-01');
 --------------------------------------------------
 -- 10. PARTICIPATION
 --------------------------------------------------

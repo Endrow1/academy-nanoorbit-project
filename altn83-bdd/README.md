@@ -62,6 +62,53 @@ FENETRE_COM     (id_fenetre PK, datetime_debut, duree, elevation_max, volume_don
 PARTICIPATION   (id_satellite PK FK, id_mission PK FK, role_satellite)
 ```
 
+### Réponse aux questions :
+2.1 – Génération du schéma DDL
+2.1.1 –  Q1 — Pourquoi ne peut-on pas créer SATELLITE avant ORBITE ? Quelle règle de gestion cela traduit-il ?
+On ne peut pas créer SATELLITE avant ORBITE car la table SATELLITE contient une clé étrangère :
+FOREIGN KEY (id_orbite) REFERENCES ORBITE(id_orbite)
+Cela implique que toute valeur de id_orbite insérée dans SATELLITE doit exister préalablement dans ORBITE.
+Donc, ORBITE est une table parent et SATELLITE une table enfant.
+DONC
+Un satellite doit obligatoirement être positionné sur une orbite existante (relation de dépendance / intégrité référentielle).
+
+2.1.2 –  Q2 — La règle RG-S06 (satellite désorbité : plus de fenêtre ni de mission) peut-elle être vérifiée au niveau DDL seul ? Quelle solution proposez-vous ?
+Non, cette règle ne peut pas être entièrement vérifiée au niveau DDL.
+Le DDL (contraintes CHECK, FK, NOT NULL) ne permet pas de vérifier des conditions inter-tables dynamiques ou de contrôler l’existence de lignes dans d’autres tables selon une logique métier globale.
+
+Ici, il faut vérifier que : Si un satellite est désorbité (statut = 'désorbité' par exemple),
+alors : aucune ligne dans FENETRE_COM ne lui est associée et aucune participation à une mission n’existe
+Solution :
+Utiliser des triggers PL/SQL (BEFORE INSERT/UPDATE/DELETE) pour :
+-	bloquer les insertions dans FENETRE_COM si le satellite est désorbité
+-	empêcher l’ajout de PARTICIPATION
+-	éventuellement ajouter des contrôles applicatifs (logique métier côté application)
+
+2.1.3 –  Comment implémentez-vous la contrainte RG-F02 (pas de chevauchement de fenêtres pour un même satellite) ? Cette contrainte est-elle directement exprimable en CHECK ?
+Non, cette contrainte n’est pas exprimable via un CHECK.
+Un CHECK ne peut pas comparer plusieurs lignes et ne peut pas interroger la table elle-même pour détecter des chevauchements
+Or ici, il faut vérifier que pour un même id_satellite :
+les intervalles temporels des fenêtres (datetime_debut + duree) ne se chevauchent pas. C’est une contrainte inter-lignes + temporelle.
+Solution :
+Utiliser un trigger BEFORE INSERT/UPDATE sur FENETRE_COM
+dans le trigger :
+Calculer la fin de fenêtre (datetime_debut + intervalle)
+Vérifier qu’aucune fenêtre existante du même satellite n’intersecte avec la nouvelle
+2.1.4 –  Q4 — Quel type Oracle choisissez-vous pour format_cubesat (valeurs possibles : 1U, 3U, 6U, 12U) ? Justifiez.
+Le type choisi est : VARCHAR2(5)
+Justification :
+-	Les valeurs sont alphanumériques (1U, 3U, etc.)
+-	Elles ne sont pas purement numériques
+-	Le suffixe 'U' est significatif (unité de cube satellite)
+     VARCHAR2 est donc adapté pour stocker, des codes catégoriels, des valeurs non arithmétiques
+     Amélioration possible :
+     Ajouter une contrainte CHECK pour limiter les valeurs autorisées :
+     CONSTRAINT chk_format_cubesat
+     CHECK (format_cubesat IN ('1U', '3U', '6U', '12U'))
+
+Cela garantit la cohérence des données tout en restant simple.
+
+
 ---
 
 ## 🔴 Les 5 triggers à implémenter (Phase 2)
