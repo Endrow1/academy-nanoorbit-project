@@ -79,7 +79,7 @@ CREATE TABLE CENTRE_CONTROLE (
                             ville VARCHAR2(50) NOT NULL,
                             region_geo VARCHAR2(50) NOT NULL,
                             fuseau_horaire VARCHAR2(50) NOT NULL,
-                            statut VARCHAR2(20) NOT NULL
+                            statut VARCHAR2(20) NOT NULL,
                             CONSTRAINT chk_centre_statut CHECK (statut IN ('Actif','Inactif'))
 );
 
