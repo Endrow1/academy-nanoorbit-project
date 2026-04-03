@@ -1,7 +1,7 @@
 services:
   oracle-db:
     image: gvenzl/oracle-free:23.7-slim-faststart
-    container_name: nano_orbit
+    container_name: nano_orbit1
     ports:
       - "1521:1521"
     environment:
@@ -17,4 +17,4 @@ services:
       - ./scripts:/opt/oracle/scripts/startup
 
 volumes:
-  oracle_data:cdcd
+  oracle_data:

@@ -1,6 +1,5 @@
 --------------------------------------------------
 -- NANOORBIT - PHASE 2
--- SCHÉMA DDL COMPLET + TRIGGERS
 --------------------------------------------------
 
 --------------------------------------------------
@@ -51,7 +50,7 @@ CREATE TABLE INSTRUMENT (
                             modele VARCHAR2(100) NOT NULL,
                             resolution NUMBER(6,1),
                             consommation NUMBER(5,2) NOT NULL,
-                            masse NUMBER(5,3) NOT NULL
+                            masse NUMBER(5,3) NOT NULL,
                             CONSTRAINT chk_instr_consommation CHECK (consommation > 0),
                             CONSTRAINT chk_instr_masse CHECK (masse > 0),
                             CONSTRAINT chk_instr_resolution CHECK (resolution IS NULL OR resolution > 0)
@@ -95,7 +94,7 @@ CREATE TABLE STATION_SOL (
                             diametre_antenne NUMBER(4,1) NOT NULL,
                             bande_frequence VARCHAR2(10) NOT NULL,
                             debit_max NUMBER(6,1) NOT NULL,
-                            statut VARCHAR2(20) NOT NULL
+                            statut VARCHAR2(20) NOT NULL,
                             CONSTRAINT chk_latitude CHECK (latitude BETWEEN -90 AND 90),
                             CONSTRAINT chk_longitude CHECK (longitude BETWEEN -180 AND 180),
                             CONSTRAINT chk_diametre CHECK (diametre_antenne > 0),
@@ -125,9 +124,9 @@ CREATE TABLE MISSION (
                             zone_geo_cible VARCHAR2(200) NOT NULL,
                             date_debut DATE NOT NULL,
                             date_fin DATE,
-                            statut_mission VARCHAR2(20) NOT NULL
+                            statut_mission VARCHAR2(20) NOT NULL,
                             CONSTRAINT chk_mission_dates CHECK (date_fin IS NULL OR date_fin >= date_debut),
-                            CONSTRAINT chk_mission_statut CHECK (statut_mission IN ('Planifiée','En cours','Terminée'))
+                            CONSTRAINT chk_mission_statut CHECK (statut_mission IN ('Planifiée','Active','Terminée'))
 );
 
 --------------------------------------------------
