@@ -1,6 +1,13 @@
 package com.example.myapplication.mock
 
-import com.example.myapplication.model.*
+import com.example.myapplication.models.FenetreCom
+import com.example.myapplication.models.Instrument
+import com.example.myapplication.models.Mission
+import com.example.myapplication.models.Orbite
+import com.example.myapplication.models.Satellite
+import com.example.myapplication.models.StationSol
+import com.example.myapplication.models.StatutFenetre
+import com.example.myapplication.models.StatutSatellite
 import java.time.LocalDateTime
 
 object MockData {
@@ -20,8 +27,7 @@ object MockData {
             1,
             LocalDateTime.of(2023, 5, 12, 10, 0),
             12.5
-        ),
-        Satellite(
+        ), Satellite(
             2,
             "SAT-002",
             StatutSatellite.OPERATIONNEL,
@@ -29,8 +35,7 @@ object MockData {
             1,
             LocalDateTime.of(2023, 8, 20, 14, 30),
             22.0
-        ),
-        Satellite(
+        ), Satellite(
             3,
             "SAT-003",
             StatutSatellite.EN_VEILLE,
@@ -38,8 +43,7 @@ object MockData {
             2,
             LocalDateTime.of(2024, 1, 15, 0, 0),
             4.2
-        ),
-        Satellite(
+        ), Satellite(
             4,
             "SAT-004",
             StatutSatellite.DEFAILLANT,
@@ -47,8 +51,7 @@ object MockData {
             3,
             LocalDateTime.of(2022, 11, 3, 9, 15),
             11.8
-        ),
-        Satellite(
+        ), Satellite(
             5,
             "SAT-005",
             StatutSatellite.DESORBITE,
@@ -73,11 +76,51 @@ object MockData {
     )
 
     val fenetresCom = listOf(
-        FenetreCom(101, LocalDateTime.now().minusDays(1), 600, "REALISEE", 1, "KRN", 450.5),
-        FenetreCom(102, LocalDateTime.now().minusHours(5), 480, "REALISEE", 2, "VNC", 210.0),
-        FenetreCom(103, LocalDateTime.now().minusHours(2), 540, "REALISEE", 1, "HBK", 380.2),
-        FenetreCom(104, LocalDateTime.now().plusHours(4), 600, "PLANIFIEE", 3, "KRN", null),
-        FenetreCom(105, LocalDateTime.now().plusDays(1), 300, "PLANIFIEE", 2, "VNC", null)
+        FenetreCom(
+            101,
+            LocalDateTime.now().minusDays(1),
+            600,
+            StatutFenetre.REALISEE,
+            1,
+            "KRN",
+            450.5
+        ),
+        FenetreCom(
+            102,
+            LocalDateTime.now().minusHours(5),
+            480,
+            StatutFenetre.REALISEE,
+            2,
+            "VNC",
+            210.0
+        ),
+        FenetreCom(
+            103,
+            LocalDateTime.now().minusHours(2),
+            540,
+            StatutFenetre.REALISEE,
+            1,
+            "HBK",
+            380.2
+        ),
+        FenetreCom(
+            104,
+            LocalDateTime.now().plusHours(4),
+            600,
+            StatutFenetre.PLANIFIEE,
+            3,
+            "KRN",
+            null
+        ),
+        FenetreCom(
+            105,
+            LocalDateTime.now().plusDays(1),
+            300,
+            StatutFenetre.PLANIFIEE,
+            2,
+            "VNC",
+            null
+        )
     )
 
     val missions = listOf(

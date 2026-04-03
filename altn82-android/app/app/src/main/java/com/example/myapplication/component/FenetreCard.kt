@@ -13,10 +13,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.myapplication.model.FenetreCom
+import com.example.myapplication.models.FenetreCom
 
 @Composable
 fun FenetreCard(fenetre: FenetreCom, nomStation: String) {
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -30,10 +31,8 @@ fun FenetreCard(fenetre: FenetreCom, nomStation: String) {
             ) {
                 Text(text = nomStation, style = MaterialTheme.typography.labelLarge)
                 Text(
-                    text = fenetre.statut,
-                    color = if (fenetre.statut == "REALISEE") Color(0xFF4CAF50) else Color(
-                        0xFF2196F3
-                    )
+                    text = fenetre.statut.name,
+                    color = Color(fenetre.statut.color.toLong(16))
                 )
             }
             Text(text = "Durée : ${fenetre.duree} sec", style = MaterialTheme.typography.bodyMedium)

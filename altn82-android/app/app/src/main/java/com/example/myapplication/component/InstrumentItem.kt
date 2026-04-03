@@ -7,7 +7,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import com.example.myapplication.model.Instrument
+import com.example.myapplication.models.Instrument
 
 @Composable
 fun InstrumentItem(instrument: Instrument, etatFonctionnement: String) {
