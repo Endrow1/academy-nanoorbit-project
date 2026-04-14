@@ -26,6 +26,6 @@ interface NanoOrbitApi {
     @GET("missions")
     suspend fun getMissions(): List<Mission>
 
-    @GET("orbite")
+    @GET("orbites")
     suspend fun getOrbites(): List<Orbite>
 }

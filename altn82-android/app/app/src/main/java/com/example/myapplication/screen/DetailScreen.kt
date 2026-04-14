@@ -35,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,31 +45,45 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.myapplication.component.StatusBadge
-import com.example.myapplication.mock.MockData
 import com.example.myapplication.viewmodel.NanoOrbitViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(
-    satelliteId: Int, viewModel: NanoOrbitViewModel, onBack: () -> Unit
+    satelliteId: Int,
+    viewModel: NanoOrbitViewModel,
+    onBack: () -> Unit
 ) {
-    val satellite = MockData.satellites.find { it.idSatellite == satelliteId }
-    val orbite = MockData.orbites.find { it.idOrbite == satellite?.idOrbite }
-    val instruments = MockData.instruments.filter { it.idSatellite == satelliteId }
+    val satellites by viewModel.filteredSatellites.collectAsStateWithLifecycle()
+    val orbites by viewModel.orbites.collectAsStateWithLifecycle()
+    val instruments by viewModel.instruments.collectAsStateWithLifecycle()
+    val missions by viewModel.missions.collectAsStateWithLifecycle()
+
+    val satellite = satellites.find { it.idSatellite == satelliteId }
+    val orbite = orbites.find { it.idOrbite == satellite?.idOrbite }
     val missionIds = satellite?.missions?.map { it.missionId } ?: emptyList()
-    val missions = MockData.missions.filter { it.idMission in missionIds }
+    val missionsAssociees = missions.filter { it.idMission in missionIds }
 
     var showAnomalieDialog by remember { mutableStateOf(false) }
 
+    LaunchedEffect(satelliteId) {
+        viewModel.loadInstrumentsForSatellite(satelliteId)
+    }
+
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text(satellite?.nomSatellite ?: "Détail") }, navigationIcon = {
-                IconButton(onClick = onBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+            TopAppBar(
+                title = { Text(satellite?.nomSatellite ?: "Détail") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                    }
                 }
-            })
-        }) { padding ->
+            )
+        }
+    ) { padding ->
         if (satellite == null) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
@@ -97,8 +112,8 @@ fun DetailScreen(
                             DetailRow("Masse", "${satellite.masse} kg")
                             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                             DetailRow("Type d'orbite", orbite?.typeOrbite ?: "N/A")
-                            DetailRow("Altitude", "${orbite?.altitude} km")
-                            DetailRow("Inclinaison", "${orbite?.inclinaison}°")
+                            DetailRow("Altitude", "${orbite?.altitude ?: "N/A"} km")
+                            DetailRow("Inclinaison", "${orbite?.inclinaison ?: "N/A"}°")
                             DetailRow("Couverture", orbite?.zoneCouverture ?: "N/A")
                             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
@@ -108,38 +123,45 @@ fun DetailScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     Text("Batterie", style = MaterialTheme.typography.bodyMedium)
-                                    Text(
-                                        "${satellite.battery}%",
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
+                                    Text("${satellite.battery}%")
                                 }
                                 LinearProgressIndicator(
                                     progress = { satellite.battery / 100f },
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(8.dp),
-                                    color = if (satellite.battery < 15) Color.Red else MaterialTheme.colorScheme.primary
+                                    color = if (satellite.battery < 15) Color.Red
+                                    else MaterialTheme.colorScheme.primary
                                 )
                             }
                         }
                     }
                 }
+
                 item {
                     HorizontalDivider(modifier = Modifier.padding(vertical = 6.dp))
                 }
+
                 item { DetailSectionTitle("Instruments embarqués") }
+
                 if (instruments.isEmpty()) {
                     item {
                         Text(
-                            "Pas d'instruments", modifier = Modifier.padding(horizontal = 8.dp)
+                            "Pas d'instruments",
+                            modifier = Modifier.padding(horizontal = 8.dp)
                         )
                     }
                 } else {
                     items(instruments) { instrument ->
                         Card(modifier = Modifier.fillMaxWidth()) {
                             ListItem(
-                                overlineContent = { Text("${instrument.typeInstrument} - ${instrument.modele}") },
+                                overlineContent = {
+                                    Text("${instrument.typeInstrument} - ${instrument.modele}")
+                                },
                                 headlineContent = { Text(instrument.refInstrument) },
+                                supportingContent = {
+                                    Text("Résolution : ${instrument.resolution ?: "N/A"}")
+                                },
                                 trailingContent = {
                                     Text(
                                         text = instrument.statutInstrument.name,
@@ -153,10 +175,13 @@ fun DetailScreen(
                         }
                     }
                 }
+
                 item {
                     HorizontalDivider(modifier = Modifier.padding(vertical = 6.dp))
                 }
+
                 item { DetailSectionTitle("Missions associées") }
+
                 if (satellite.missions.isEmpty()) {
                     item {
                         Text(
@@ -165,10 +190,11 @@ fun DetailScreen(
                         )
                     }
                 } else {
-                    items(missions) { mission ->
-                        val role =
-                            satellite.missions.find { it.missionId == mission.idMission }?.role
-                                ?: "Inconnu"
+                    items(missionsAssociees) { mission ->
+                        val role = satellite.missions
+                            .find { it.missionId == mission.idMission }
+                            ?.role ?: "Inconnu"
+
                         Card(modifier = Modifier.fillMaxWidth()) {
                             ListItem(
                                 headlineContent = { Text(mission.nomMission) },
@@ -182,7 +208,9 @@ fun DetailScreen(
                 item {
                     Button(
                         onClick = { showAnomalieDialog = true },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error
+                        ),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 8.dp)
@@ -203,13 +231,20 @@ fun DetailScreen(
 
 @Composable
 fun DetailRow(label: String, value: String) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
         Text(
-            label,
+            text = label,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        Text(value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
 
@@ -226,16 +261,30 @@ fun DetailSectionTitle(title: String) {
 @Composable
 fun AnomalieDialog(onDismiss: () -> Unit) {
     var text by remember { mutableStateOf("") }
-    AlertDialog(onDismissRequest = onDismiss, title = { Text("Signaler une anomalie") }, text = {
-        OutlinedTextField(
-            value = text,
-            onValueChange = { text = it },
-            label = { Text("Description") },
-            modifier = Modifier.fillMaxWidth()
-        )
-    }, confirmButton = {
-        Button(onClick = onDismiss, enabled = text.isNotBlank()) { Text("Envoyer") }
-    }, dismissButton = {
-        TextButton(onClick = onDismiss) { Text("Annuler") }
-    })
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Signaler une anomalie") },
+        text = {
+            OutlinedTextField(
+                value = text,
+                onValueChange = { text = it },
+                label = { Text("Description") },
+                modifier = Modifier.fillMaxWidth()
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = onDismiss,
+                enabled = text.isNotBlank()
+            ) {
+                Text("Envoyer")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Annuler")
+            }
+        }
+    )
 }

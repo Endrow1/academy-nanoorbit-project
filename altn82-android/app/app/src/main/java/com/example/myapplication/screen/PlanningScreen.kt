@@ -34,19 +34,24 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.myapplication.mock.MockData
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.myapplication.models.StatutFenetre
+import com.example.myapplication.models.StationSol
 import com.example.myapplication.viewmodel.NanoOrbitViewModel
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlanningScreen(viewModel: NanoOrbitViewModel) {
-    val stations = MockData.stations
-    var selectedStation by remember { mutableStateOf(stations.firstOrNull()) }
+    val stations by viewModel.stations.collectAsStateWithLifecycle()
+    val fenetresFromCache by viewModel.fenetres.collectAsStateWithLifecycle()
+    val satellites by viewModel.filteredSatellites.collectAsStateWithLifecycle()
+
+    var selectedStation by remember { mutableStateOf<StationSol?>(null) }
     var expanded by remember { mutableStateOf(false) }
 
-    val fenetres = MockData.fenetresCom.filter { it.codeStation == selectedStation?.codeStation }
+    val fenetres = fenetresFromCache
+        .filter { selectedStation == null || it.codeStation == selectedStation?.codeStation }
         .sortedBy { it.datetimeDebut }
 
     val totalDuree = fenetres.sumOf { it.duree }
@@ -55,7 +60,8 @@ fun PlanningScreen(viewModel: NanoOrbitViewModel) {
     Scaffold(
         topBar = {
             TopAppBar(title = { Text("Planning des communications") })
-        }) { padding ->
+        }
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -74,17 +80,26 @@ fun PlanningScreen(viewModel: NanoOrbitViewModel) {
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Station au sol") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                    },
                     modifier = Modifier
                         .menuAnchor()
                         .fillMaxWidth()
                 )
-                ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
                     stations.forEach { station ->
-                        DropdownMenuItem(text = { Text(station.nomStation) }, onClick = {
-                            selectedStation = station
-                            expanded = false
-                        })
+                        DropdownMenuItem(
+                            text = { Text(station.nomStation) },
+                            onClick = {
+                                selectedStation = station
+                                expanded = false
+                            }
+                        )
                     }
                 }
             }
@@ -103,6 +118,7 @@ fun PlanningScreen(viewModel: NanoOrbitViewModel) {
                         fontWeight = FontWeight.Bold
                     )
                 }
+
                 Column(horizontalAlignment = Alignment.End) {
                     Text("Volume total", style = MaterialTheme.typography.labelMedium)
                     Text(
@@ -134,8 +150,8 @@ fun PlanningScreen(viewModel: NanoOrbitViewModel) {
                         } else {
                             fenetres.forEachIndexed { index, fenetre ->
                                 val satelliteNom =
-                                    MockData.satellites.find { it.idSatellite == fenetre.idSatellite }?.nomSatellite
-                                        ?: "Inconnu"
+                                    satellites.find { it.idSatellite == fenetre.idSatellite }
+                                        ?.nomSatellite ?: "Inconnu"
 
                                 ListItem(
                                     headlineContent = { Text("Satellite: $satelliteNom") },
@@ -143,9 +159,7 @@ fun PlanningScreen(viewModel: NanoOrbitViewModel) {
                                         Text(
                                             "${
                                                 fenetre.datetimeDebut.format(
-                                                    DateTimeFormatter.ofPattern(
-                                                        "dd/MM HH:mm"
-                                                    )
+                                                    DateTimeFormatter.ofPattern("dd/MM HH:mm")
                                                 )
                                             } - ${fenetre.volumeDonnees}Go - ${fenetre.duree}s"
                                         )
@@ -153,7 +167,9 @@ fun PlanningScreen(viewModel: NanoOrbitViewModel) {
                                     trailingContent = {
                                         StatusChip(fenetre.statut)
                                     },
-                                    colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                                    colors = ListItemDefaults.colors(
+                                        containerColor = Color.Transparent
+                                    )
                                 )
 
                                 if (index < fenetres.size - 1) {

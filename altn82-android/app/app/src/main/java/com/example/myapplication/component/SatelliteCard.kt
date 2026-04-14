@@ -16,15 +16,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.myapplication.mock.MockData
 import com.example.myapplication.models.Satellite
 import com.example.myapplication.models.StatutSatellite
 
 @Composable
-fun SatelliteCard(satellite: Satellite, onClick: () -> Unit) {
+fun SatelliteCard(
+    satellite: Satellite,
+    typeOrbite: String,
+    onClick: () -> Unit
+) {
     val isDesorbite = satellite.statut == StatutSatellite.DESORBITE
-    val orbiteAssociee = MockData.orbites.find { it.idOrbite == satellite.idOrbite }
-    val nomAffiche = orbiteAssociee?.typeOrbite ?: "Orbite Inconnue"
 
     /*
     Q3
@@ -59,11 +60,12 @@ fun SatelliteCard(satellite: Satellite, onClick: () -> Unit) {
                     text = satellite.nomSatellite,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = if (isDesorbite) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.onSurface
+                    color = if (isDesorbite) MaterialTheme.colorScheme.outline
+                    else MaterialTheme.colorScheme.onSurface
                 )
 
                 Text(
-                    text = "${satellite.formatCubesat} - $nomAffiche",
+                    text = "${satellite.formatCubesat} - $typeOrbite",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

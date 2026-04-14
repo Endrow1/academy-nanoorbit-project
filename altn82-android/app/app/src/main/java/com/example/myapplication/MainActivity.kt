@@ -24,11 +24,15 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.room.Room
+import com.example.myapplication.data.local.NanoOrbitDatabase
+import com.example.myapplication.repository.NanoOrbitRepository
 import com.example.myapplication.screen.DashboardScreen
 import com.example.myapplication.screen.DetailScreen
 import com.example.myapplication.screen.PlanningScreen
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.viewmodel.NanoOrbitViewModel
+import com.example.myapplication.viewmodel.NanoOrbitViewModelFactory
 
 object Routes {
     const val DASHBOARD = "dashboard"
@@ -43,17 +47,31 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        val database = Room.databaseBuilder(
+            applicationContext,
+            NanoOrbitDatabase::class.java,
+            "nanoorbit.db"
+        ).build()
+
+        val repository = NanoOrbitRepository(
+            satelliteDao = database.satelliteDao(),
+            fenetreDao = database.fenetreDao()
+        )
+
         setContent {
             MyApplicationTheme {
-                MainNavigation()
+                MainNavigation(repository)
             }
         }
     }
 }
 
 @Composable
-fun MainNavigation() {
-    val orbitViewModel: NanoOrbitViewModel = viewModel()
+fun MainNavigation(repository: NanoOrbitRepository) {
+    val orbitViewModel: NanoOrbitViewModel = viewModel(
+        factory = NanoOrbitViewModelFactory(repository)
+    )
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -118,6 +136,7 @@ fun MainNavigation() {
                     }
                 )
             }
+
             composable(
                 route = Routes.DETAIL,
                 arguments = listOf(navArgument("satelliteId") { type = NavType.IntType })
@@ -130,8 +149,13 @@ fun MainNavigation() {
                 )
             }
 
-            composable(Routes.PLANNING) { PlanningScreen(viewModel = orbitViewModel) }
-            composable(Routes.MAP) { Text("Écran Carte", Modifier.padding(innerPadding)) }
+            composable(Routes.PLANNING) {
+                PlanningScreen(viewModel = orbitViewModel)
+            }
+
+            composable(Routes.MAP) {
+                Text("Écran Carte", Modifier.padding(innerPadding))
+            }
         }
     }
 }
