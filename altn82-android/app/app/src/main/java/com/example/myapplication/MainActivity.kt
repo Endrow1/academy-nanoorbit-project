@@ -29,6 +29,7 @@ import com.example.myapplication.data.local.NanoOrbitDatabase
 import com.example.myapplication.repository.NanoOrbitRepository
 import com.example.myapplication.screen.DashboardScreen
 import com.example.myapplication.screen.DetailScreen
+import com.example.myapplication.screen.MapScreen
 import com.example.myapplication.screen.PlanningScreen
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.viewmodel.NanoOrbitViewModel
@@ -154,7 +155,7 @@ fun MainNavigation(repository: NanoOrbitRepository) {
             }
 
             composable(Routes.MAP) {
-                Text("Écran Carte", Modifier.padding(innerPadding))
+                MapScreen(viewModel = orbitViewModel)
             }
         }
     }
