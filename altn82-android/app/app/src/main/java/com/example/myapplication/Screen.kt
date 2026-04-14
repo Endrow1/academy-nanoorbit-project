@@ -33,7 +33,8 @@ import com.example.myapplication.viewmodel.NanoOrbitViewModel
 @Composable
 fun DashboardScreen(
     modifier: Modifier = Modifier,
-    viewModel: NanoOrbitViewModel = viewModel()
+    viewModel: NanoOrbitViewModel = viewModel(),
+    onSatelliteClick: (Int) -> Unit
 ) {
     val satellites by viewModel.filteredSatellites.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
@@ -118,7 +119,7 @@ fun DashboardScreen(
                     items(satellites) { satellite ->
                         SatelliteCard(
                             satellite = satellite,
-                            onClick = { }
+                            onClick = { onSatelliteClick(satellite.idSatellite) }
                         )
                     }
                 }

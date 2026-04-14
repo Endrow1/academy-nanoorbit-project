@@ -27,8 +27,7 @@ enum class StatutSatellite {
 }
 
 enum class StatutFenetre {
-    REALISEE,
-    PLANIFIEE;
+    REALISEE, PLANIFIEE;
 
     val color: String
         get() = when (this) {
@@ -37,6 +36,22 @@ enum class StatutFenetre {
         }
 }
 
+
+enum class StatutInstrument {
+    NOMINAL, DEGRADE, HS;
+
+    val color: String
+        get() = when (this) {
+            NOMINAL -> "FF4CAF50"
+            DEGRADE -> "FFFF9800"
+            HS -> "FFF44336"
+        }
+}
+
+data class MissionDTO(
+    val missionId: Int, val role: String
+)
+
 data class Satellite(
     val idSatellite: Int,
     val nomSatellite: String,
@@ -44,7 +59,9 @@ data class Satellite(
     val formatCubesat: String,
     val idOrbite: Int,
     val dateLancement: LocalDateTime? = null,
-    val masse: Double? = null
+    val masse: Double,
+    val battery: Int,
+    val missions: List<MissionDTO>
 )
 
 data class FenetreCom(
@@ -89,5 +106,7 @@ data class Instrument(
     val typeInstrument: String,
     val modele: String,
     val resolution: String? = null,
-    val consommation: Double? = null
+    val consommation: Double? = null,
+    val idSatellite: Int,
+    val statutInstrument: StatutInstrument
 )

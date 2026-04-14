@@ -22,9 +22,9 @@ class NanoOrbitRepository {
                 )
             })
         .create()
-    
+
     private val api: NanoOrbitApi =
-        Retrofit.Builder().baseUrl("https://nano-orbit-api.loca.lt/")
+        Retrofit.Builder().baseUrl("https://.loca.lt/")
             .addConverterFactory(
                 GsonConverterFactory.create(
                     gson

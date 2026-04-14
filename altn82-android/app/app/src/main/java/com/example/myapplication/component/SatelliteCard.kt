@@ -67,15 +67,6 @@ fun SatelliteCard(satellite: Satellite, onClick: () -> Unit) {
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-
-                if (isDesorbite) {
-                    Text(
-                        text = "INDISPONIBLE",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
             }
 
             Box(

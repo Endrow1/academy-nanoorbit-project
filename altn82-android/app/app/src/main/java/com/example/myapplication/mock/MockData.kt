@@ -3,10 +3,12 @@ package com.example.myapplication.mock
 import com.example.myapplication.models.FenetreCom
 import com.example.myapplication.models.Instrument
 import com.example.myapplication.models.Mission
+import com.example.myapplication.models.MissionDTO
 import com.example.myapplication.models.Orbite
 import com.example.myapplication.models.Satellite
 import com.example.myapplication.models.StationSol
 import com.example.myapplication.models.StatutFenetre
+import com.example.myapplication.models.StatutInstrument
 import com.example.myapplication.models.StatutSatellite
 import java.time.LocalDateTime
 
@@ -20,53 +22,82 @@ object MockData {
 
     val satellites = listOf(
         Satellite(
-            1,
-            "SAT-001",
-            StatutSatellite.OPERATIONNEL,
-            "6U",
-            1,
-            LocalDateTime.of(2023, 5, 12, 10, 0),
-            12.5
-        ), Satellite(
-            2,
-            "SAT-002",
-            StatutSatellite.OPERATIONNEL,
-            "12U",
-            1,
-            LocalDateTime.of(2023, 8, 20, 14, 30),
-            22.0
-        ), Satellite(
-            3,
-            "SAT-003",
-            StatutSatellite.EN_VEILLE,
-            "3U",
-            2,
-            LocalDateTime.of(2024, 1, 15, 0, 0),
-            4.2
-        ), Satellite(
-            4,
-            "SAT-004",
-            StatutSatellite.DEFAILLANT,
-            "6U",
-            3,
-            LocalDateTime.of(2022, 11, 3, 9, 15),
-            11.8
-        ), Satellite(
-            5,
-            "SAT-005",
-            StatutSatellite.DESORBITE,
-            "3U",
-            3,
-            LocalDateTime.of(2020, 6, 10, 11, 0),
-            3.9
+            idSatellite = 1,
+            nomSatellite = "SAT-001",
+            statut = StatutSatellite.OPERATIONNEL,
+            formatCubesat = "6U",
+            idOrbite = 1,
+            dateLancement = LocalDateTime.of(2023, 5, 12, 10, 0),
+            masse = 12.5,
+            battery = 85,
+            missions = listOf(
+                MissionDTO(missionId = 1, role = "Support Télécom"),
+                MissionDTO(missionId = 2, role = "Imagerie Haute Résolution")
+            )
+        ),
+        Satellite(
+            idSatellite = 2,
+            nomSatellite = "SAT-002",
+            statut = StatutSatellite.OPERATIONNEL,
+            formatCubesat = "12U",
+            idOrbite = 1,
+            dateLancement = LocalDateTime.of(2023, 8, 20, 14, 30),
+            masse = 22.0,
+            battery = 92,
+            missions = listOf(
+                MissionDTO(missionId = 3, role = "Analyse Spectrale")
+            )
+        ),
+        Satellite(
+            idSatellite = 3,
+            nomSatellite = "SAT-003",
+            statut = StatutSatellite.EN_VEILLE,
+            formatCubesat = "3U",
+            idOrbite = 2,
+            dateLancement = LocalDateTime.of(2024, 1, 15, 0, 0),
+            masse = 4.2,
+            battery = 45,
+            missions = emptyList() // Aucune mission pour celui-ci
+        ),
+        Satellite(
+            idSatellite = 4,
+            nomSatellite = "SAT-004",
+            statut = StatutSatellite.DEFAILLANT,
+            formatCubesat = "6U",
+            idOrbite = 3,
+            dateLancement = LocalDateTime.of(2022, 11, 3, 9, 15),
+            masse = 11.8,
+            battery = 8,
+            missions = listOf(
+                MissionDTO(missionId = 2, role = "Observateur de secours")
+            )
+        ),
+        Satellite(
+            idSatellite = 5,
+            nomSatellite = "SAT-005",
+            statut = StatutSatellite.DESORBITE,
+            formatCubesat = "3U",
+            idOrbite = 3,
+            dateLancement = LocalDateTime.of(2020, 6, 10, 11, 0),
+            masse = 3.9,
+            battery = 0,
+            missions = emptyList()
         )
     )
 
     val instruments = listOf(
-        Instrument("INS-MSI-01", "Imagerie", "MSI-Gen2", "10m", 45.5),
-        Instrument("INS-SAR-01", "Radar", "SAR-Light", "5m", 120.0),
-        Instrument("INS-HYP-01", "Hyperspectral", "Hyper-X", "30m", 35.0),
-        Instrument("INS-MAG-01", "Magnétomètre", "Mag-Alpha", null, 5.0)
+        Instrument("INS-MSI-01", "Imagerie", "MSI-Gen2", "10m", 45.5, 1, StatutInstrument.NOMINAL),
+        Instrument("INS-SAR-01", "Radar", "SAR-Light", "5m", 120.0, 1, StatutInstrument.DEGRADE),
+        Instrument("INS-HYP-01", "Hyperspectral", "Hyper-X", "30m", 35.0, 1, StatutInstrument.HS),
+        Instrument(
+            "INS-MAG-01",
+            "Magnétomètre",
+            "Mag-Alpha",
+            null,
+            5.0,
+            1,
+            StatutInstrument.NOMINAL
+        )
     )
 
     val stations = listOf(
