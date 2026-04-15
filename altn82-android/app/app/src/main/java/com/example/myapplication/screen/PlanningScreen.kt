@@ -15,8 +15,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -35,17 +33,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.myapplication.models.StatutFenetre
+import com.example.myapplication.component.FenetreCard
 import com.example.myapplication.models.StationSol
+import com.example.myapplication.models.StatutFenetre
 import com.example.myapplication.viewmodel.NanoOrbitViewModel
-import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlanningScreen(viewModel: NanoOrbitViewModel) {
     val stations by viewModel.stations.collectAsStateWithLifecycle()
     val fenetresFromCache by viewModel.fenetres.collectAsStateWithLifecycle()
-    val satellites by viewModel.filteredSatellites.collectAsStateWithLifecycle()
 
     var selectedStation by remember { mutableStateOf<StationSol?>(null) }
     var expanded by remember { mutableStateOf(false) }
@@ -149,29 +146,7 @@ fun PlanningScreen(viewModel: NanoOrbitViewModel) {
                             )
                         } else {
                             fenetres.forEachIndexed { index, fenetre ->
-                                val satelliteNom =
-                                    satellites.find { it.idSatellite == fenetre.idSatellite }
-                                        ?.nomSatellite ?: "Inconnu"
-
-                                ListItem(
-                                    headlineContent = { Text("Satellite: $satelliteNom") },
-                                    supportingContent = {
-                                        Text(
-                                            "${
-                                                fenetre.datetimeDebut.format(
-                                                    DateTimeFormatter.ofPattern("dd/MM HH:mm")
-                                                )
-                                            } - ${fenetre.volumeDonnees}Go - ${fenetre.duree}s"
-                                        )
-                                    },
-                                    trailingContent = {
-                                        StatusChip(fenetre.statut)
-                                    },
-                                    colors = ListItemDefaults.colors(
-                                        containerColor = Color.Transparent
-                                    )
-                                )
-
+                                FenetreCard(fenetre, selectedStation?.nomStation ?: "Inconnu")
                                 if (index < fenetres.size - 1) {
                                     HorizontalDivider(
                                         modifier = Modifier.padding(horizontal = 16.dp),

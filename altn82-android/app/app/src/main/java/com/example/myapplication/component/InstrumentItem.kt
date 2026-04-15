@@ -10,10 +10,10 @@ import androidx.compose.runtime.Composable
 import com.example.myapplication.models.Instrument
 
 @Composable
-fun InstrumentItem(instrument: Instrument, etatFonctionnement: String) {
+fun InstrumentItem(instrument: Instrument) {
     ListItem(
         headlineContent = { Text(instrument.modele) },
-        supportingContent = { Text("${instrument.typeInstrument} • $etatFonctionnement") },
+        supportingContent = { Text("${instrument.typeInstrument} - ${instrument.statutInstrument}") },
         trailingContent = {
             instrument.resolution?.let { Text(it, style = MaterialTheme.typography.labelSmall) }
         },

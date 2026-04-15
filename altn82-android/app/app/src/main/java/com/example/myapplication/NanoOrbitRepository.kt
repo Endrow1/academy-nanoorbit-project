@@ -2,7 +2,11 @@ package com.example.myapplication.repository
 
 import com.example.myapplication.api.NanoOrbitApi
 import com.example.myapplication.data.local.FenetreDao
+import com.example.myapplication.data.local.InstrumentDao
+import com.example.myapplication.data.local.MissionDao
+import com.example.myapplication.data.local.OrbiteDao
 import com.example.myapplication.data.local.SatelliteDao
+import com.example.myapplication.data.local.StationDao
 import com.example.myapplication.data.local.toEntity
 import com.example.myapplication.data.local.toModel
 import com.example.myapplication.models.FenetreCom
@@ -25,14 +29,17 @@ import java.time.format.DateTimeFormatter
 
 class NanoOrbitRepository(
     private val satelliteDao: SatelliteDao,
-    private val fenetreDao: FenetreDao
+    private val fenetreDao: FenetreDao,
+    private val orbiteDao: OrbiteDao,
+    private val stationDao: StationDao,
+    private val missionDao: MissionDao,
+    private val instrumentDao: InstrumentDao
 ) {
     /*
-     * Lien explicite ALTN83 Q3 :
-     * stratégie Cache-First = l'application lit d'abord le cache local Room,
-     * puis tente une synchronisation réseau en arrière-plan.
-     * Ainsi, même si le serveur central est indisponible, l'opérateur peut
-     * continuer à consulter les dernières données disponibles.
+     * Stratégie Cache-First :
+     * 1. l'UI observe toujours Room
+     * 2. on tente ensuite une synchro réseau
+     * 3. en cas d'échec réseau, on continue d'afficher le cache
      */
 
     private val gson = GsonBuilder()
@@ -49,7 +56,7 @@ class NanoOrbitRepository(
 
     private val api: NanoOrbitApi =
         Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8000/")
+            .baseUrl("https://few-bananas-pay.loca.lt/")
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
             .create(NanoOrbitApi::class.java)
@@ -63,27 +70,64 @@ class NanoOrbitRepository(
     fun observeFenetres(): Flow<List<FenetreCom>> =
         fenetreDao.observeAll().map { list -> list.map { it.toModel() } }
 
-    suspend fun refreshSatellites() {
+    fun observeOrbites(): Flow<List<Orbite>> =
+        orbiteDao.observeAll().map { list -> list.map { it.toModel() } }
+
+    fun observeStations(): Flow<List<StationSol>> =
+        stationDao.observeAll().map { list -> list.map { it.toModel() } }
+
+    fun observeMissions(): Flow<List<Mission>> =
+        missionDao.observeAll().map { list -> list.map { it.toModel() } }
+
+    fun observeInstrumentsBySatellite(satelliteId: Int): Flow<List<Instrument>> =
+        instrumentDao.observeBySatelliteId(satelliteId).map { list -> list.map { it.toModel() } }
+
+    suspend fun refreshAll() {
         try {
             delay(500)
             val now = LocalDateTime.now()
+            val maxDate = now.plusDays(7)
+
             val remoteSatellites = api.getSatellites()
+            val remoteFenetres = api.getFenetres()
+                .filter { !it.datetimeDebut.isBefore(now) && !it.datetimeDebut.isAfter(maxDate) }
+
+            val remoteOrbites = api.getOrbites()
+            val remoteStations = api.getStations()
+            val remoteMissions = api.getMissions()
 
             satelliteDao.clearAll()
             satelliteDao.insertAll(remoteSatellites.map { it.toEntity(now) })
+
+            fenetreDao.clearAll()
+            fenetreDao.insertAll(remoteFenetres.map { it.toEntity(now) })
+
+            orbiteDao.clearAll()
+            orbiteDao.insertAll(remoteOrbites.map { it.toEntity(now) })
+
+            stationDao.clearAll()
+            stationDao.insertAll(remoteStations.map { it.toEntity(now) })
+
+            missionDao.clearAll()
+            missionDao.insertAll(remoteMissions.map { it.toEntity(now) })
 
             _cacheInfo.value = CacheInfo(
                 isOfflineMode = false,
                 lastUpdatedAt = now
             )
         } catch (e: Exception) {
-            val hasCache = satelliteDao.count() > 0
-            val lastUpdated = satelliteDao.getLastCachedAt()
+            val hasAnyCache =
+                satelliteDao.count() > 0 ||
+                        fenetreDao.count() > 0 ||
+                        orbiteDao.count() > 0 ||
+                        stationDao.count() > 0 ||
+                        missionDao.count() > 0 ||
+                        instrumentDao.count() > 0
 
-            if (hasCache) {
+            if (hasAnyCache) {
                 _cacheInfo.value = CacheInfo(
                     isOfflineMode = true,
-                    lastUpdatedAt = lastUpdated
+                    lastUpdatedAt = getGlobalLastCachedAt()
                 )
             } else {
                 throw e
@@ -91,50 +135,40 @@ class NanoOrbitRepository(
         }
     }
 
-    suspend fun refreshFenetres() {
+    suspend fun refreshInstrumentsForSatellite(satelliteId: Int) {
         try {
-            delay(500)
+            delay(300)
             val now = LocalDateTime.now()
-            val maxDate = now.plusDays(7)
+            val remoteInstruments = api.getInstruments(satelliteId)
 
-            val remoteFenetres = api.getFenetres()
-                .filter { !it.datetimeDebut.isBefore(now) && !it.datetimeDebut.isAfter(maxDate) }
-
-            fenetreDao.clearAll()
-            fenetreDao.insertAll(remoteFenetres.map { it.toEntity(now) })
+            instrumentDao.deleteBySatelliteId(satelliteId)
+            instrumentDao.insertAll(remoteInstruments.map { it.toEntity(now) })
 
             val current = _cacheInfo.value
             _cacheInfo.value = current.copy(
                 isOfflineMode = false,
                 lastUpdatedAt = now
             )
-        } catch (e: Exception) {
-            val lastUpdated = fenetreDao.getLastCachedAt()
-            val current = _cacheInfo.value
-            _cacheInfo.value = current.copy(
-                isOfflineMode = true,
-                lastUpdatedAt = lastUpdated ?: current.lastUpdatedAt
-            )
+        } catch (_: Exception) {
+            val hasCache = instrumentDao.count() > 0
+            if (hasCache) {
+                val current = _cacheInfo.value
+                _cacheInfo.value = current.copy(
+                    isOfflineMode = true,
+                    lastUpdatedAt = getGlobalLastCachedAt()
+                )
+            }
         }
     }
 
-    suspend fun getStations(): List<StationSol> {
-        delay(300)
-        return api.getStations()
-    }
-
-    suspend fun getOrbites(): List<Orbite> {
-        delay(300)
-        return api.getOrbites()
-    }
-
-    suspend fun getMissions(): List<Mission> {
-        delay(300)
-        return api.getMissions()
-    }
-
-    suspend fun getInstrumentsBySatellite(id: Int): List<Instrument> {
-        delay(300)
-        return api.getInstruments(id)
+    private suspend fun getGlobalLastCachedAt(): LocalDateTime? {
+        return listOfNotNull(
+            satelliteDao.getLastCachedAt(),
+            fenetreDao.getLastCachedAt(),
+            orbiteDao.getLastCachedAt(),
+            stationDao.getLastCachedAt(),
+            missionDao.getLastCachedAt(),
+            instrumentDao.getLastCachedAt()
+        ).maxOrNull()
     }
 }

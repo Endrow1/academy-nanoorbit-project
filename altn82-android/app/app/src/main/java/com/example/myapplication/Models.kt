@@ -27,25 +27,18 @@ enum class StatutSatellite {
 }
 
 enum class StatutFenetre {
-    REALISEE, PLANIFIEE;
+    REALISEE, PLANIFIEE, ANNULEE;
 
     val color: String
         get() = when (this) {
             REALISEE -> "FF4CAF50"
             PLANIFIEE -> "FF2196F3"
+            ANNULEE -> "FFF44336"
         }
 }
 
-
 enum class StatutInstrument {
     NOMINAL, DEGRADE, HS;
-
-    val color: String
-        get() = when (this) {
-            NOMINAL -> "FF4CAF50"
-            DEGRADE -> "FFFF9800"
-            HS -> "FFF44336"
-        }
 }
 
 data class MissionDTO(

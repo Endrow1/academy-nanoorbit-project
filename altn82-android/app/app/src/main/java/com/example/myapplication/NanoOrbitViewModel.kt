@@ -51,11 +51,25 @@ class NanoOrbitViewModel(
     val instruments: StateFlow<List<Instrument>> = _instruments.asStateFlow()
 
     val filteredSatellites: StateFlow<List<Satellite>> = combine(
-        _satellites, _searchQuery, _selectedStatut
-    ) { sats, query, statut ->
+        _satellites,
+        _orbites,
+        _searchQuery,
+        _selectedStatut
+    ) { sats, orbites, query, statut ->
+
+        val normalizedQuery = query.trim().lowercase()
+
         sats.filter { sat ->
-            val matchesQuery = sat.nomSatellite.contains(query, ignoreCase = true)
-            val matchesStatut = statut == null || sat.statut == statut
+            val orbiteAssociee = orbites.find { it.idOrbite == sat.idOrbite }
+
+            val matchesQuery =
+                normalizedQuery.isBlank() ||
+                        sat.nomSatellite.lowercase().contains(normalizedQuery) ||
+                        orbiteAssociee?.typeOrbite?.lowercase()?.contains(normalizedQuery) == true
+
+            val matchesStatut =
+                statut == null || sat.statut == statut
+
             matchesQuery && matchesStatut
         }
     }.stateIn(
@@ -83,6 +97,24 @@ class NanoOrbitViewModel(
         }
 
         viewModelScope.launch {
+            repository.observeStations().collect {
+                _stations.value = it
+            }
+        }
+
+        viewModelScope.launch {
+            repository.observeOrbites().collect {
+                _orbites.value = it
+            }
+        }
+
+        viewModelScope.launch {
+            repository.observeMissions().collect {
+                _missions.value = it
+            }
+        }
+
+        viewModelScope.launch {
             repository.cacheInfo.collect {
                 _cacheInfo.value = it
             }
@@ -94,12 +126,7 @@ class NanoOrbitViewModel(
             _isLoading.value = true
             _errorMessage.value = null
             try {
-                repository.refreshSatellites()
-                repository.refreshFenetres()
-
-                _stations.value = repository.getStations()
-                _orbites.value = repository.getOrbites()
-                _missions.value = repository.getMissions()
+                repository.refreshAll()
             } catch (e: Exception) {
                 _errorMessage.value = "Erreur réseau : ${e.message}"
             } finally {
@@ -110,11 +137,13 @@ class NanoOrbitViewModel(
 
     fun loadInstrumentsForSatellite(satelliteId: Int) {
         viewModelScope.launch {
-            try {
-                _instruments.value = repository.getInstrumentsBySatellite(satelliteId)
-            } catch (e: Exception) {
-                _instruments.value = emptyList()
+            repository.observeInstrumentsBySatellite(satelliteId).collect {
+                _instruments.value = it
             }
+        }
+
+        viewModelScope.launch {
+            repository.refreshInstrumentsForSatellite(satelliteId)
         }
     }
 
@@ -128,15 +157,6 @@ class NanoOrbitViewModel(
 
     fun onStatutFilterChange(statut: StatutSatellite?) {
         _selectedStatut.value = statut
-    }
-
-    fun validateDuree(duree: Int): Boolean {
-        return if (duree in 1..900) {
-            true
-        } else {
-            _errorMessage.value = "La durée doit être comprise entre 1 et 900 secondes"
-            false
-        }
     }
 
     fun getCacheAgeText(): String {

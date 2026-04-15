@@ -21,4 +21,7 @@ interface FenetreDao {
 
     @Query("SELECT MAX(cachedAt) FROM fenetres_com")
     suspend fun getLastCachedAt(): LocalDateTime?
+
+    @Query("SELECT COUNT(*) FROM fenetres_com")
+    suspend fun count(): Int
 }

@@ -2,12 +2,24 @@ package com.example.myapplication.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -19,9 +31,7 @@ import com.example.myapplication.viewmodel.NanoOrbitViewModel
 
 @Composable
 fun DashboardScreen(
-    modifier: Modifier = Modifier,
-    viewModel: NanoOrbitViewModel,
-    onSatelliteClick: (Int) -> Unit
+    modifier: Modifier = Modifier, viewModel: NanoOrbitViewModel, onSatelliteClick: (Int) -> Unit
 ) {
     val satellites by viewModel.filteredSatellites.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
@@ -70,26 +80,24 @@ fun DashboardScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                .padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             FilterChip(
                 selected = selectedStatut == null,
                 onClick = { viewModel.onStatutFilterChange(null) },
-                label = { Text("Tous") }
-            )
+                label = { Text("Tous") })
 
             StatutSatellite.entries.forEach { statut ->
                 FilterChip(
                     selected = selectedStatut == statut,
                     onClick = { viewModel.onStatutFilterChange(statut) },
-                    label = { Text(statut.name) }
-                )
+                    label = { Text(statut.getLabel()) })
             }
         }
 
+        val sattelitesOp = satellites.filter { it.statut == StatutSatellite.OPERATIONNEL }
         Text(
-            text = "${satellites.size} résultat(s)",
+            text = "${sattelitesOp.size}/${satellites.size} opérationnel",
             modifier = Modifier.padding(16.dp)
         )
 
@@ -117,15 +125,14 @@ fun DashboardScreen(
                 else -> {
                     LazyColumn {
                         items(satellites) { satellite ->
-                            val typeOrbite = orbites
-                                .find { it.idOrbite == satellite.idOrbite }
-                                ?.typeOrbite ?: "Orbite inconnue"
+                            val typeOrbite =
+                                orbites.find { it.idOrbite == satellite.idOrbite }?.typeOrbite
+                                    ?: "Orbite inconnue"
 
                             SatelliteCard(
                                 satellite = satellite,
                                 typeOrbite = typeOrbite,
-                                onClick = { onSatelliteClick(satellite.idSatellite) }
-                            )
+                                onClick = { onSatelliteClick(satellite.idSatellite) })
                         }
                     }
                 }

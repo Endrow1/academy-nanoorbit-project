@@ -46,6 +46,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.myapplication.component.InstrumentItem
 import com.example.myapplication.component.StatusBadge
 import com.example.myapplication.viewmodel.NanoOrbitViewModel
 
@@ -153,26 +154,7 @@ fun DetailScreen(
                     }
                 } else {
                     items(instruments) { instrument ->
-                        Card(modifier = Modifier.fillMaxWidth()) {
-                            ListItem(
-                                overlineContent = {
-                                    Text("${instrument.typeInstrument} - ${instrument.modele}")
-                                },
-                                headlineContent = { Text(instrument.refInstrument) },
-                                supportingContent = {
-                                    Text("Résolution : ${instrument.resolution ?: "N/A"}")
-                                },
-                                trailingContent = {
-                                    Text(
-                                        text = instrument.statutInstrument.name,
-                                        color = Color(instrument.statutInstrument.color.toLong(16)),
-                                        style = MaterialTheme.typography.labelLarge,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                },
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                            )
-                        }
+                        InstrumentItem(instrument)
                     }
                 }
 

@@ -8,6 +8,8 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.time.LocalDateTime
 import kotlin.collections.emptyList
+import com.example.myapplication.models.EtatStation
+import com.example.myapplication.models.StatutInstrument
 
 class RoomConverters {
 
@@ -45,5 +47,19 @@ class RoomConverters {
         val type = object : TypeToken<List<MissionDTO>>() {}.type
         return gson.fromJson(value, type) ?: emptyList()
     }
+
+    @TypeConverter
+    fun fromEtatStation(value: EtatStation): String = value.name
+
+    @TypeConverter
+    fun toEtatStation(value: String): EtatStation =
+        EtatStation.valueOf(value)
+
+    @TypeConverter
+    fun fromStatutInstrument(value: StatutInstrument): String = value.name
+
+    @TypeConverter
+    fun toStatutInstrument(value: String): StatutInstrument =
+        StatutInstrument.valueOf(value)
 
 }
