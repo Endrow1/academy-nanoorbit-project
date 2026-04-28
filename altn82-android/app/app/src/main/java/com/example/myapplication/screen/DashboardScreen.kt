@@ -121,7 +121,25 @@ fun DashboardScreen(
                         }
                     }
                 }
+                /*
+                Q1 — Pourquoi utilise-t-on LazyColumn plutôt que Column ?
 
+                LazyColumn est utilisé pour afficher des listes longues de manière performante,
+                car il ne compose (render) que les éléments visibles à l’écran.
+
+                À l’inverse, Column va créer TOUS les éléments de la liste dès le départ,
+                même ceux qui ne sont pas visibles.
+
+                Avec une liste importante (ex : 100 satellites) :
+                - Column va consommer plus de mémoire
+                - le temps de rendu initial sera plus long
+                - cela peut provoquer des ralentissements ou des freezes
+
+                LazyColumn fonctionne comme un RecyclerView :
+                il recycle les éléments et ne charge que ce qui est nécessaire.
+
+                → C’est donc indispensable pour garantir de bonnes performances sur mobile.
+                */
                 else -> {
                     LazyColumn {
                         items(satellites) { satellite ->
