@@ -86,18 +86,11 @@ END;
 
 -- 3. Affectation mission
 -- Affectation OK
--- (si déjà existant → erreur PK possible, c’est normal en test répété)
 
 -- 4. Stats satellite (SAT-001)
--- Nb fenêtres : (ancien nombre + 1)
--- Volume total : (ancien volume + 1200)
--- Durée moyenne : (mise à jour selon nouvelle fenêtre)
-
--- Exemple réaliste :
 -- Nb fenêtres : 3
 -- Volume total : 2450
--- Durée moyenne : ~343
+-- Durée moyenne : ~366
 
 -- 5. Statut constellation
 -- Résumé : 3/5 satellites opérationnels, 2 missions actives
--- (selon tes données actuelles)
