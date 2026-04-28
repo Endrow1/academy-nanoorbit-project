@@ -56,7 +56,7 @@ class NanoOrbitRepository(
 
     private val api: NanoOrbitApi =
         Retrofit.Builder()
-            .baseUrl("https://few-bananas-pay.loca.lt/")
+            .baseUrl("https://early-bushes-like.loca.lt/")
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
             .create(NanoOrbitApi::class.java)
@@ -86,11 +86,10 @@ class NanoOrbitRepository(
         try {
             delay(500)
             val now = LocalDateTime.now()
-            val maxDate = now.plusDays(7)
+            now.plusDays(7)
 
             val remoteSatellites = api.getSatellites()
             val remoteFenetres = api.getFenetres()
-                .filter { !it.datetimeDebut.isBefore(now) && !it.datetimeDebut.isAfter(maxDate) }
 
             val remoteOrbites = api.getOrbites()
             val remoteStations = api.getStations()

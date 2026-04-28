@@ -146,7 +146,11 @@ fun PlanningScreen(viewModel: NanoOrbitViewModel) {
                             )
                         } else {
                             fenetres.forEachIndexed { index, fenetre ->
-                                FenetreCard(fenetre, selectedStation?.nomStation ?: "Inconnu")
+                                FenetreCard(
+                                    fenetre,
+                                    stations.find { it.codeStation == fenetre.codeStation }?.nomStation
+                                        ?: "Inconnu"
+                                )
                                 if (index < fenetres.size - 1) {
                                     HorizontalDivider(
                                         modifier = Modifier.padding(horizontal = 16.dp),

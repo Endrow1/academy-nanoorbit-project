@@ -14,10 +14,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -29,6 +31,7 @@ import com.example.myapplication.component.SatelliteCard
 import com.example.myapplication.models.StatutSatellite
 import com.example.myapplication.viewmodel.NanoOrbitViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     modifier: Modifier = Modifier, viewModel: NanoOrbitViewModel, onSatelliteClick: (Int) -> Unit
@@ -41,116 +44,106 @@ fun DashboardScreen(
     val cacheInfo by viewModel.cacheInfo.collectAsStateWithLifecycle()
     val orbites by viewModel.orbites.collectAsStateWithLifecycle()
 
-    Column(modifier = modifier.fillMaxSize()) {
+    val refreshing by viewModel.isLoading.collectAsStateWithLifecycle()
 
-        if (cacheInfo.isOfflineMode) {
-            Text(
-                text = "Mode hors-ligne — ${viewModel.getCacheAgeText()}",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.errorContainer)
-                    .padding(12.dp),
-                color = MaterialTheme.colorScheme.onErrorContainer,
-                style = MaterialTheme.typography.bodyMedium
-            )
-        } else if (cacheInfo.lastUpdatedAt != null) {
-            Text(
-                text = viewModel.getCacheAgeText(),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.secondaryContainer)
-                    .padding(12.dp),
-                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                style = MaterialTheme.typography.bodyMedium
-            )
-        }
+    PullToRefreshBox(
+        isRefreshing = refreshing,
+        onRefresh = { viewModel.refreshSatellites() }
+    ) {
+        Column(modifier = modifier.fillMaxSize()) {
 
-
-        TextField(
-            value = searchQuery,
-            onValueChange = { viewModel.onSearchQueryChange(it) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            placeholder = { Text("Rechercher...") },
-            singleLine = true
-        )
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            FilterChip(
-                selected = selectedStatut == null,
-                onClick = { viewModel.onStatutFilterChange(null) },
-                label = { Text("Tous") })
-
-            StatutSatellite.entries.forEach { statut ->
-                FilterChip(
-                    selected = selectedStatut == statut,
-                    onClick = { viewModel.onStatutFilterChange(statut) },
-                    label = { Text(statut.getLabel()) })
+            if (cacheInfo.isOfflineMode) {
+                Text(
+                    text = "Mode hors-ligne — ${viewModel.getCacheAgeText()}",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.errorContainer)
+                        .padding(12.dp),
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            } else if (cacheInfo.lastUpdatedAt != null) {
+                Text(
+                    text = viewModel.getCacheAgeText(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.secondaryContainer)
+                        .padding(12.dp),
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
-        }
 
-        val sattelitesOp = satellites.filter { it.statut == StatutSatellite.OPERATIONNEL }
-        Text(
-            text = "${sattelitesOp.size}/${satellites.size} opérationnel",
-            modifier = Modifier.padding(16.dp)
-        )
+            TextField(
+                value = searchQuery,
+                onValueChange = { viewModel.onSearchQueryChange(it) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                placeholder = { Text("Rechercher...") },
+                singleLine = true
+            )
 
-        Box(modifier = Modifier.weight(1f)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FilterChip(
+                    selected = selectedStatut == null,
+                    onClick = { viewModel.onStatutFilterChange(null) },
+                    label = { Text("Tous") }
+                )
 
-            when {
-                isLoading && satellites.isEmpty() -> {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center)
+                StatutSatellite.entries.forEach { statut ->
+                    FilterChip(
+                        selected = selectedStatut == statut,
+                        onClick = { viewModel.onStatutFilterChange(statut) },
+                        label = { Text(statut.getLabel()) }
                     )
                 }
+            }
 
-                errorMessage != null && satellites.isEmpty() -> {
-                    Column(
-                        modifier = Modifier.align(Alignment.Center),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(errorMessage!!, textAlign = TextAlign.Center)
-                        Button(onClick = { viewModel.refreshSatellites() }) {
-                            Text("Réessayer")
+            val sattelitesOp = satellites.filter { it.statut == StatutSatellite.OPERATIONNEL }
+            Text(
+                text = "${sattelitesOp.size}/${satellites.size} opérationnel",
+                modifier = Modifier.padding(16.dp)
+            )
+
+            Box(modifier = Modifier.weight(1f)) {
+                when {
+                    isLoading && satellites.isEmpty() -> {
+                        CircularProgressIndicator(
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+
+                    errorMessage != null && satellites.isEmpty() -> {
+                        Column(
+                            modifier = Modifier.align(Alignment.Center),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(errorMessage!!, textAlign = TextAlign.Center)
+                            Button(onClick = { viewModel.refreshSatellites() }) {
+                                Text("Réessayer")
+                            }
                         }
                     }
-                }
-                /*
-                Q1 — Pourquoi utilise-t-on LazyColumn plutôt que Column ?
 
-                LazyColumn est utilisé pour afficher des listes longues de manière performante,
-                car il ne compose (render) que les éléments visibles à l’écran.
+                    else -> {
+                        LazyColumn {
+                            items(satellites) { satellite ->
+                                val typeOrbite =
+                                    orbites.find { it.idOrbite == satellite.idOrbite }?.typeOrbite
+                                        ?: "Orbite inconnue"
 
-                À l’inverse, Column va créer TOUS les éléments de la liste dès le départ,
-                même ceux qui ne sont pas visibles.
-
-                Avec une liste importante (ex : 100 satellites) :
-                - Column va consommer plus de mémoire
-                - le temps de rendu initial sera plus long
-                - cela peut provoquer des ralentissements ou des freezes
-
-                LazyColumn fonctionne comme un RecyclerView :
-                il recycle les éléments et ne charge que ce qui est nécessaire.
-
-                → C’est donc indispensable pour garantir de bonnes performances sur mobile.
-                */
-                else -> {
-                    LazyColumn {
-                        items(satellites) { satellite ->
-                            val typeOrbite =
-                                orbites.find { it.idOrbite == satellite.idOrbite }?.typeOrbite
-                                    ?: "Orbite inconnue"
-
-                            SatelliteCard(
-                                satellite = satellite,
-                                typeOrbite = typeOrbite,
-                                onClick = { onSatelliteClick(satellite.idSatellite) })
+                                SatelliteCard(
+                                    satellite = satellite,
+                                    typeOrbite = typeOrbite,
+                                    onClick = { onSatelliteClick(satellite.idSatellite) }
+                                )
+                            }
                         }
                     }
                 }
