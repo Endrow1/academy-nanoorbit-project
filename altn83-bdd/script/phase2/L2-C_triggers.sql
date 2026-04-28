@@ -35,19 +35,21 @@ INSERT INTO STATION_SOL VALUES ('ST-1','Station Test',45,2,10,'X',100,'Active');
 
 INSERT INTO FENETRE_COM (datetime_debut,duree,elevation_max,statut,id_satellite,code_station)
 VALUES (SYSTIMESTAMP,120,40,'Planifiée','SAT-TEST','ST-1');
-*/
+
 
 -- RESULTAT ATTENDU :
 -- Insertion réussie
 
 -- CAS EN ERREUR
-/*
+
 UPDATE SATELLITE
 SET statut = 'Désorbité'
 WHERE id_satellite = 'SAT-TEST';
 
 INSERT INTO FENETRE_COM (datetime_debut,duree,elevation_max,statut,id_satellite,code_station)
 VALUES (SYSTIMESTAMP,120,40,'Planifiée','SAT-TEST','ST-1');
+
+ROLLBACK;
 */
 
 -- RESULTAT ATTENDU :

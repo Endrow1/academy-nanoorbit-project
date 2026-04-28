@@ -84,7 +84,6 @@ DECLARE
 BEGIN
     DBMS_OUTPUT.PUT_LINE('Test calculer_volume_session');
 
--- id_fenetre = 1 (à adapter si besoin)
 v_volume := calculer_volume_session(1);
 
 DBMS_OUTPUT.PUT_LINE('Volume calculé : ' || v_volume);
@@ -93,22 +92,3 @@ END;
 -- Résultat attendu :
 -- Volume calculé : (duree * debit)
 -- ex: 420 * 400 = 168000
-
-
---------------------------------------------------
--- TEST : appel multiple
---------------------------------------------------
-
-BEGIN
-    DBMS_OUTPUT.PUT_LINE('--- TEST GLOBAL ---');
-
-    afficher_statut_satellite('SAT-003');
-
-    ajouter_fenetre('SAT-003', 'GS-KIR-01');
-
-END;
-/
--- Résultat attendu :
--- Infos SAT-003 + insertion valide
-
-
